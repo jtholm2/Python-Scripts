@@ -1,10 +1,9 @@
 import pandas as pd
 import time
 from selenium import webdriver
-import csv
 
-def scrapeThis(url):
-    browser = webdriver.Firefox()
+browser = webdriver.Firefox()
+def scrapeThis(url, num):
     browser.get(url) #opens the website input from the user
     time.sleep(2) #allows time for the elements of the webpage to load
     responsibilities = browser.find_element_by_css_selector('div.jd-info:nth-child(2) > p:nth-child(2)') #finds and stores the element associated with the 'Responsibilities' section
@@ -29,9 +28,21 @@ def scrapeThis(url):
 
     df = pd.DataFrame(data=sortedDictionary, index=[0]) #the following three lines allow me to create a new excel file with the new sorted dictionary key:value pairs
     df=(df.T)
-    df.to_excel('job_posting_word_count.xlsx')
+    if num == 1:
+        with pd.ExcelWriter('job_posting_word_count.xlsx') as writer:
+            df.to_excel(writer, sheet_name='Sheet_' + str(num))
+    else:
+        with pd.ExcelWriter('job_posting_word_count.xlsx', mode='a') as writer:
+            df.to_excel(writer, sheet_name= 'Sheet_' + str(num))
 
-print("please enter the url you would like to scrape: ")
-url = input()
-
-scrapeThis(url)
+i = 1
+while(True):
+    print("would you like to scrape, y or n:")
+    choice = input()
+    if(choice.lower() != 'y'):
+        break
+    else:
+        print("please enter the url you would like to scrape: ")
+        url = input()
+        scrapeThis(url, i)
+        i = i + 1
